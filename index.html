@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎙️ Ghi Âm Cuộc Họp - Voice to Docs</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a1929 0%, #0d2137 25%, #0f2b45 50%, #0c334e 75%, #0a3a5c 100%);
+      background-size: 400% 400%;
+      animation: gradientBG 20s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      25% { background-position: 100% 0%; }
+      50% { background-position: 100% 100%; }
+      75% { background-position: 0% 100%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-radius: 40px;
+      padding: 35px 25px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 
+                  0 0 0 1px rgba(255, 255, 255, 0.1),
+                  inset 0 0 40px rgba(0, 255, 200, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-size: 60px;
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 20px rgba(0, 200, 255, 0.6));
+      animation: float 3s ease-in-out infinite;
+      display: block;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 28px;
+      font-weight: 800;
+      text-shadow: 0 0 25px rgba(0, 180, 255, 0.7);
+      margin-bottom: 8px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .timer-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 25px;
+      padding: 25px;
+      margin-bottom: 25px;
+      border: 2px solid rgba(0, 200, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+                  inset 0 0 30px rgba(0, 150, 255, 0.05);
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: 64px;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      color: #00e5ff;
+      text-shadow: 0 0 30px rgba(0, 229, 255, 0.8),
+                   0 0 60px rgba(0, 180, 255, 0.4);
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .timer-display.warning {
+      color: #ff9100;
+      text-shadow: 0 0 30px rgba(255, 145, 0, 0.8),
+                   0 0 60px rgba(255, 100, 0, 0.4);
+      animation: pulse-warning 1s infinite;
+    }
+
+    .timer-display.danger {
+      color: #ff1744;
+      text-shadow: 0 0 30px rgba(255, 23, 68, 0.8),
+                   0 0 60px rgba(255, 0, 50, 0.4);
+      animation: pulse-danger 0.5s infinite;
+    }
+
+    @keyframes pulse-warning {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes pulse-danger {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+    }
+
+    .timer-status {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .max-time-info {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 22px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    label {
+      display: block;
+      color: #b3e5fc;
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.25);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    input:focus {
+      border-color: #00b4db;
+      box-shadow: 0 0 20px rgba(0, 180, 219, 0.4);
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    textarea {
+      width: 100%;
+      height: 180px;
+      padding: 15px;
+      border-radius: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.25);
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      font-family: 'Times New Roman', serif;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+      border-color: #00b4db;
+      box-shadow: 0 0 20px rgba(0, 180, 219, 0.4);
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 14px 20px;
+      border-radius: 50px;
+      border: none;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-record {
+      width: 100%;
+      background: linear-gradient(135deg, #00b4db, #0083b0);
+      color: white;
+      box-shadow: 0 8px 25px rgba(0, 180, 219, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 16px;
+      padding: 18px;
+    }
+
+    .btn-record:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(0, 180, 219, 0.6);
+    }
+
+    .btn-record.recording {
+      background: linear-gradient(135deg, #ff1744, #d50000);
+      box-shadow: 0 8px 30px rgba(255, 23, 68, 0.6);
+      animation: pulse-record 1.5s infinite;
+    }
+
+    @keyframes pulse-record {
+      0% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.7); }
+      70% { box-shadow: 0 0 0 25px rgba(255, 23, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0); }
+    }
+
+    .btn-pause {
+      flex: 1;
+      background: linear-gradient(135deg, #ff9100, #ff6d00);
+      color: white;
+      box-shadow: 0 5px 20px rgba(255, 145, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-pause:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 145, 0, 0.5);
+    }
+
+    .btn-pause.paused {
+      background: linear-gradient(135deg, #00c853, #009624);
+      box-shadow: 0 5px 20px rgba(0, 200, 83, 0.35);
+    }
+
+    .btn-create {
+      width: 100%;
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+      color: white;
+      box-shadow: 0 8px 25px rgba(56, 239, 125, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-create:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(56, 239, 125, 0.55);
+    }
+
+    .btn-create:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-reset {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 13px;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .btn-download {
+      width: 100%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 8px 25px rgba(118, 75, 162, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-download:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(118, 75, 162, 0.55);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-delete {
+      width: 100%;
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      box-shadow: 0 8px 25px rgba(255, 65, 108, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-delete:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(255, 65, 108, 0.55);
+    }
+
+    .btn-delete:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-manage {
+      width: 100%;
+      background: linear-gradient(135deg, #f093fb, #f5576c);
+      color: white;
+      box-shadow: 0 8px 25px rgba(245, 87, 108, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-manage:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(245, 87, 108, 0.55);
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      color: #b3e5fc;
+      font-size: 14px;
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      word-break: break-word;
+    }
+
+    .status.success {
+      background: rgba(0, 200, 83, 0.2);
+      border: 1px solid rgba(0, 200, 83, 0.3);
+      color: #69f0ae;
+    }
+
+    .status.error {
+      background: rgba(255, 23, 68, 0.2);
+      border: 1px solid rgba(255, 23, 68, 0.3);
+      color: #ff5252;
+    }
+
+    .status.warning {
+      background: rgba(255, 145, 0, 0.2);
+      border: 1px solid rgba(255, 145, 0, 0.3);
+      color: #ffab40;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #00e5ff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .file-info {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 12px;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+      color: #b3e5fc;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-info a {
+      color: #00e5ff;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .file-info a:hover {
+      text-decoration: underline;
+    }
+
+    /* Modal quản lý file */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1a2a3a;
+      border-radius: 30px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-title {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 5px;
+    }
+
+    .modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    .file-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .file-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .file-item.selected {
+      border-color: #00e5ff;
+      background: rgba(0, 229, 255, 0.1);
+    }
+
+    .file-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #00e5ff;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .file-item .file-info-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-item .file-name {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .file-item .file-meta {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .file-item .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .file-item .btn-sm {
+      padding: 6px 12px;
+      font-size: 11px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .file-item .btn-sm-open {
+      background: rgba(0, 229, 255, 0.2);
+      color: #00e5ff;
+    }
+
+    .file-item .btn-sm-open:hover {
+      background: rgba(0, 229, 255, 0.3);
+    }
+
+    .file-item .btn-sm-delete {
+      background: rgba(255, 23, 68, 0.2);
+      color: #ff5252;
+    }
+
+    .file-item .btn-sm-delete:hover {
+      background: rgba(255, 23, 68, 0.3);
+    }
+
+    .modal-footer {
+      padding-top: 15px;
+      margin-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal-footer .btn-modal {
+      padding: 12px 20px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .modal-footer .btn-modal:hover {
+      transform: translateY(-2px);
+    }
+
+    .modal-footer .btn-select-all {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .modal-footer .btn-select-all:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-footer .btn-download-selected {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .modal-footer .btn-download-selected:hover {
+      box-shadow: 0 8px 25px rgba(118, 75, 162, 0.4);
+    }
+
+    .modal-footer .btn-download-selected:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .modal-footer .btn-delete-selected {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+    }
+
+    .modal-footer .btn-delete-selected:hover {
+      box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4);
+    }
+
+    .modal-footer .btn-delete-selected:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .modal-footer .btn-refresh {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      padding: 12px 15px;
+    }
+
+    .modal-footer .btn-refresh:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .file-count {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 13px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .empty-files {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .empty-files .empty-icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    /* Loading overlay cho DOCX */
+    .docx-loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .docx-loading.show {
+      display: flex;
+    }
+
+    .docx-loading .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #00e5ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .docx-loading .text {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .docx-loading .sub-text {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        padding: 25px 18px;
+        border-radius: 30px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      .timer-display {
+        font-size: 50px;
+      }
+      button {
+        font-size: 12px;
+        padding: 12px 15px;
+      }
+      .modal-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div class="docx-loading" id="docxLoading">
+    <div class="spinner"></div>
+    <div class="text">Đang tạo file DOCX...</div>
+    <div class="sub-text">Vui lòng đợi trong giây lát</div>
+  </div>
+
+  <!-- Modal quản lý file -->
+  <div class="modal" id="fileManagerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">📂 Quản lý file trên Drive</span>
+        <button class="modal-close" onclick="closeFileManager()">✕</button>
+      </div>
+      <div class="file-count" id="fileCount">Đang tải danh sách...</div>
+      <div class="modal-body" id="fileListContainer">
+        <div class="empty-files">
+          <span class="empty-icon">📂</span>
+          <p>Không tìm thấy file nào</p>
+          <p style="font-size: 13px; margin-top: 8px;">Hãy ghi âm và tạo tài liệu trước</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal btn-refresh" onclick="loadFileList()">🔄 Làm mới</button>
+        <button class="btn-modal btn-delete-selected" id="deleteSelectedBtn" onclick="deleteSelectedFiles()" disabled>
+          🗑️ Xóa (0)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <span class="logo">🎙️</span>
+      <h1>Ghi Âm Cuộc Họp</h1>
+      <p class="subtitle">Voice to Document</p>
+    </div>
+
+    <div class="timer-card">
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-status" id="timerStatus">⏸️ Sẵn sàng ghi âm</div>
+      <div class="max-time-info">⏱️ Tối đa: <strong>30 phút</strong> / lần</div>
+    </div>
+
+    <div class="card">
+      <label>📝 Tên cuộc họp</label>
+      <input type="text" id="docName" placeholder="Nhập tên cuộc họp..." value="Biên bản cuộc họp">
+    </div>
+
+    <div class="card">
+      <label>📄 Nội dung ghi âm</label>
+      <textarea id="content" placeholder="Nội dung sẽ hiển thị ở đây khi bạn ghi âm..." readonly></textarea>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-record" id="recordBtn" onclick="toggleRecording()">
+        <span id="recordIcon">🎤</span>
+        <span id="recordText">BẮT ĐẦU GHI ÂM</span>
+      </button>
+
+      <div class="button-row">
+        <button class="btn-pause" id="pauseBtn" onclick="togglePause()" disabled>
+          <span id="pauseIcon">⏸️</span>
+          <span id="pauseText">TẠM DỪNG</span>
+        </button>
+        <button class="btn-reset" onclick="resetRecording()">
+          🔄 XÓA
+        </button>
+      </div>
+
+      <!-- Nút "TẠO GOOGLE DOCS" đã bỏ khỏi giao diện: việc tạo Google Doc giờ tự động thực hiện khi nhấn "DỪNG GHI ÂM" -->
+      <button class="btn-create" id="createBtn" onclick="createDocument()" disabled style="display:none;">
+        📤 TẠO GOOGLE DOCS
+      </button>
+
+      <!-- Ẩn 2 nút bên dưới vì đã có chức năng tương ứng (tải & xóa) trong "Quản lý file" -->
+      <button class="btn-download" id="downloadBtn" onclick="downloadDocx()" disabled style="display:none;">
+        📥 TẢI DOCX
+      </button>
+
+      <button class="btn-delete" id="deleteBtn" onclick="deleteDocument()" disabled style="display:none;">
+        🗑️ XÓA TRÊN DRIVE
+      </button>
+
+      <button class="btn-manage" onclick="openFileManager()">
+        📂 QUẢN LÝ FILE
+      </button>
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      📄 <a href="#" id="fileLink" target="_blank">Đã tạo tài liệu</a>
+    </div>
+
+    <div class="status" id="status">👆 Nhấn "BẮT ĐẦU GHI ÂM" để bắt đầu</div>
+  </div>
+
+  <script>
+    // ============ CẤU HÌNH ============
+    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxLNw8eBjPOt3xefikFgvecGYlfyNN_ci3_QNvb3rCDH1kCHzlWtz2edrIBg1ZNwBai/exec';
+    const MAX_RECORDING_TIME = 30 * 60;
+    const WARNING_TIME = 25 * 60;
+    const DANGER_TIME = 28 * 60;
+    
+    // ============ BIẾN TOÀN CỤC ============
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let isRecording = false;
+    let isPaused = false;
+    let recordingTimer;
+    let elapsedSeconds = 0;
+    let totalPausedTime = 0;
+    let pauseStartTime;
+    
+    // Mảng lưu các câu đã nhận dạng
+    let sentences = [];
+    let currentInterim = '';
+    
+    // Thông tin file đã tạo
+    let createdFileId = null;
+    let createdFileName = null;
+    let createdFileUrl = null;
+    
+    // Trạng thái tải thư viện docx
+    let docxLoaded = false;
+    let docxLoadPromise = null;
+
+    // Danh sách file trong modal
+    let fileList = [];
+    let selectedFileIds = new Set();
+
+    // Danh sách nguồn để tải thư viện docx.js
+    const DOCX_CDN_URLS = [
+      './docx.min.js',
+      'docx.min.js',
+      'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js',
+      'https://unpkg.com/docx@8.5.0/build/index.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.min.js'
+    ];
+
+    function loadScriptOnce(url, timeoutMs) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.crossOrigin = 'anonymous';
+
+        const timeout = setTimeout(() => {
+          script.onload = script.onerror = null;
+          script.remove();
+          reject(new Error('Quá thời gian chờ tải thư viện từ ' + url));
+        }, timeoutMs);
+
+        script.onload = function() {
+          clearTimeout(timeout);
+          if (typeof docx !== 'undefined') {
+            resolve();
+          } else {
+            script.remove();
+            reject(new Error('Thư viện tải về nhưng không khởi tạo được từ ' + url));
+          }
+        };
+
+        script.onerror = function() {
+          clearTimeout(timeout);
+          script.remove();
+          reject(new Error('Không thể tải thư viện từ ' + url));
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    function loadDocxLibrary() {
+      if (typeof docx !== 'undefined') {
+        docxLoaded = true;
+        return Promise.resolve();
+      }
+
+      if (docxLoadPromise) {
+        return docxLoadPromise;
+      }
+
+      docxLoadPromise = (async () => {
+        let lastError = null;
+        for (const url of DOCX_CDN_URLS) {
+          try {
+            await loadScriptOnce(url, 15000);
+            docxLoaded = true;
+            return;
+          } catch (err) {
+            lastError = err;
+            console.warn('⚠️ Tải DOCX thất bại từ CDN, thử nguồn khác:', err.message);
+          }
+        }
+        throw new Error(
+          (lastError ? lastError.message + '. ' : '') +
+          'Không thể tải thư viện DOCX (đã thử file cục bộ "docx.min.js" và các CDN). ' +
+          'Cách khắc phục: tải file thư viện tại https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js ' +
+          'về máy, đổi tên thành "docx.min.js" rồi đặt cùng thư mục với index.html.'
+        );
+      })();
+
+      docxLoadPromise = docxLoadPromise.finally(() => {
+        docxLoadPromise = null;
+      });
+
+      return docxLoadPromise;
+    }
+    
+    // ============ KHỞI TẠO ============
+    function initSpeechRecognition() {
+      if (!SpeechRecognition) {
+        document.getElementById('recordBtn').style.display = 'none';
+        updateStatus('⚠️ Trình duyệt không hỗ trợ nhận dạng giọng nói.', 'error');
+        return false;
+      }
+      
+      recognition = new SpeechRecognition();
+      recognition.lang = 'vi-VN';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onstart = () => {
+        console.log('🎙️ Speech recognition started');
+      };
+
+      recognition.onresult = (event) => {
+        if (isPaused) return;
+        
+        let newFinalText = '';
+        let newInterimText = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const transcript = result[0].transcript.trim();
+          
+          if (result.isFinal) {
+            newFinalText += transcript + ' ';
+          } else {
+            newInterimText += transcript;
+          }
+        }
+        
+        if (newFinalText.trim()) {
+          const rawText = newFinalText.trim();
+          const parts = rawText.split(/[.,!?;:]\s*/);
+          let addedCount = 0;
+          
+          for (const part of parts) {
+            const trimmedPart = part.trim();
+            if (trimmedPart && trimmedPart.length > 2) {
+              let isDuplicate = false;
+              for (const sent of sentences) {
+                if (sent.includes(trimmedPart) || trimmedPart.includes(sent)) {
+                  if (trimmedPart.length > sent.length) {
+                    const idx = sentences.indexOf(sent);
+                    sentences[idx] = trimmedPart;
+                    addedCount++;
+                  }
+                  isDuplicate = true;
+                  break;
+                }
+              }
+              
+              if (!isDuplicate) {
+                sentences.push(trimmedPart);
+                addedCount++;
+              }
+            }
+          }
+          
+          if (addedCount > 0) {
+            updateDisplay();
+          }
+          currentInterim = '';
+        }
+        
+        if (newInterimText.trim()) {
+          currentInterim = newInterimText.trim();
+          updateDisplay();
+          document.getElementById('status').innerHTML = '🔊 Đang nghe: ' + currentInterim;
+        }
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Lỗi nhận dạng giọng nói:', event.error);
+        
+        if (event.error === 'no-speech') {
+          updateStatus('⚠️ Không phát hiện giọng nói. Tiếp tục lắng nghe...', 'warning');
+        } else if (event.error === 'audio-capture') {
+          updateStatus('❌ Không tìm thấy microphone. Vui lòng kiểm tra lại.', 'error');
+          stopRecording();
+        } else if (event.error === 'not-allowed') {
+          updateStatus('❌ Quyền truy cập microphone bị từ chối.', 'error');
+          stopRecording();
+        } else {
+          updateStatus('❌ Lỗi: ' + event.error, 'error');
+        }
+      };
+      
+      recognition.onend = () => {
+        console.log('⏹️ Speech recognition ended');
+        if (isRecording && !isPaused) {
+          try {
+            recognition.start();
+            console.log('🔄 Tự động khởi động lại recognition');
+          } catch (e) {
+            console.error('Không thể khởi động lại:', e);
+            stopRecording();
+          }
+        }
+      };
+      
+      return true;
+    }
+    
+    // ============ CẬP NHẬT GIAO DIỆN ============
+    function updateDisplay() {
+      let displayText = sentences.join(' ');
+      if (currentInterim.trim()) {
+        displayText += ' ' + currentInterim;
+      }
+      document.getElementById('content').value = displayText;
+    }
+    
+    function getFinalContent() {
+      return sentences.join(' ');
+    }
+    
+    function updateTimer() {
+      const hours = Math.floor(elapsedSeconds / 3600);
+      const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+      const seconds = elapsedSeconds % 60;
+      
+      let timeString;
+      if (hours > 0) {
+        timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      } else {
+        timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+      
+      const timerDisplay = document.getElementById('timerDisplay');
+      timerDisplay.textContent = timeString;
+      
+      timerDisplay.classList.remove('warning', 'danger');
+      if (elapsedSeconds >= DANGER_TIME) {
+        timerDisplay.classList.add('danger');
+        updateStatus('🔴 Sắp hết thời gian! Chỉ còn ' + formatTime(MAX_RECORDING_TIME - elapsedSeconds), 'error');
+      } else if (elapsedSeconds >= WARNING_TIME) {
+        timerDisplay.classList.add('warning');
+        updateStatus('🟡 Còn ' + formatTime(MAX_RECORDING_TIME - elapsedSeconds) + ' trước khi đạt giới hạn', 'warning');
+      }
+    }
+    
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
+      return min + ' phút ' + sec + ' giây';
+    }
+    
+    function updateStatus(message, type = '') {
+      const statusEl = document.getElementById('status');
+      statusEl.innerHTML = message;
+      statusEl.className = 'status ' + type;
+    }
+    
+    // ============ ĐIỀU KHIỂN GHI ÂM ============
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+    
+    function startRecording() {
+      if (!recognition) {
+        if (!initSpeechRecognition()) return;
+      }
+      
+      if (elapsedSeconds === 0) {
+        sentences = [];
+        currentInterim = '';
+        totalPausedTime = 0;
+        createdFileId = null;
+        createdFileName = null;
+        createdFileUrl = null;
+        document.getElementById('content').value = '';
+        document.getElementById('fileInfo').classList.remove('show');
+        document.getElementById('deleteBtn').disabled = true;
+      }
+      
+      isRecording = true;
+      isPaused = false;
+      
+      try {
+        recognition.start();
+        console.log('🎙️ Bắt đầu ghi âm');
+      } catch (e) {
+        console.error('Lỗi khởi động recognition:', e);
+        updateStatus('❌ Không thể bắt đầu ghi âm. Vui lòng thử lại.', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('recordBtn');
+      btn.classList.add('recording');
+      document.getElementById('recordIcon').textContent = '⏺️';
+      document.getElementById('recordText').textContent = 'DỪNG GHI ÂM';
+      document.getElementById('pauseBtn').disabled = false;
+      document.getElementById('pauseBtn').classList.remove('paused');
+      document.getElementById('pauseIcon').textContent = '⏸️';
+      document.getElementById('pauseText').textContent = 'TẠM DỪNG';
+      document.getElementById('createBtn').disabled = true;
+      document.getElementById('downloadBtn').disabled = true;
+      document.getElementById('deleteBtn').disabled = true;
+      document.getElementById('timerStatus').textContent = '🔴 Đang ghi âm...';
+      
+      updateStatus('🎙️ Đang ghi âm cuộc họp...', '');
+      startTimer();
+    }
+    
+    function stopRecording() {
+      if (!isRecording) return;
+      
+      isRecording = false;
+      isPaused = false;
+      
+      try {
+        recognition.stop();
+        console.log('⏹️ Dừng ghi âm');
+      } catch (e) {
+        console.error('Lỗi dừng recognition:', e);
+      }
+      
+      const btn = document.getElementById('recordBtn');
+      btn.classList.remove('recording');
+      document.getElementById('recordIcon').textContent = '🎤';
+      document.getElementById('recordText').textContent = 'BẮT ĐẦU GHI ÂM';
+      document.getElementById('pauseBtn').disabled = true;
+      document.getElementById('pauseBtn').classList.remove('paused');
+      document.getElementById('pauseIcon').textContent = '⏸️';
+      document.getElementById('pauseText').textContent = 'TẠM DỪNG';
+      
+      if (sentences.length > 0) {
+        document.getElementById('createBtn').disabled = false;
+        document.getElementById('downloadBtn').disabled = false;
+        document.getElementById('timerStatus').textContent = '✅ Hoàn thành ghi âm';
+        updateStatus('✅ Đã ghi âm ' + formatTime(elapsedSeconds) + '. Đang tự động tạo tài liệu...', 'success');
+
+        // Tự động tạo Google Docs ngay sau khi dừng ghi âm
+        createDocument();
+      } else {
+        document.getElementById('timerStatus').textContent = '⏸️ Chưa có nội dung';
+        updateStatus('⚠️ Chưa có nội dung được ghi âm.', 'warning');
+      }
+      
+      stopTimer();
+    }
+    
+    function togglePause() {
+      if (!isRecording) return;
+      
+      if (isPaused) {
+        resumeRecording();
+      } else {
+        pauseRecording();
+      }
+    }
+    
+    function pauseRecording() {
+      if (!isRecording || isPaused) return;
+      
+      isPaused = true;
+      pauseStartTime = Date.now();
+      
+      try {
+        recognition.stop();
+        console.log('⏸️ Tạm dừng ghi âm');
+      } catch (e) {
+        console.error('Lỗi tạm dừng:', e);
+      }
+      
+      document.getElementById('pauseBtn').classList.add('paused');
+      document.getElementById('pauseIcon').textContent = '▶️';
+      document.getElementById('pauseText').textContent = 'TIẾP TỤC';
+      document.getElementById('timerStatus').textContent = '⏸️ Đang tạm dừng';
+      
+      stopTimer();
+      updateStatus('⏸️ Đã tạm dừng ghi âm. Nhấn "TIẾP TỤC" để ghi tiếp.', 'warning');
+    }
+    
+    function resumeRecording() {
+      if (!isRecording || !isPaused) return;
+      
+      isPaused = false;
+      
+      if (pauseStartTime) {
+        totalPausedTime += (Date.now() - pauseStartTime) / 1000;
+        pauseStartTime = null;
+      }
+      
+      try {
+        recognition.start();
+        console.log('▶️ Tiếp tục ghi âm');
+      } catch (e) {
+        console.error('Lỗi tiếp tục:', e);
+        updateStatus('❌ Không thể tiếp tục ghi âm.', 'error');
+        return;
+      }
+      
+      document.getElementById('pauseBtn').classList.remove('paused');
+      document.getElementById('pauseIcon').textContent = '⏸️';
+      document.getElementById('pauseText').textContent = 'TẠM DỪNG';
+      document.getElementById('timerStatus').textContent = '🔴 Đang ghi âm...';
+      
+      startTimer();
+      updateStatus('▶️ Tiếp tục ghi âm...', '');
+    }
+    
+    function resetRecording() {
+      if (isRecording) {
+        if (confirm('Bạn đang ghi âm. Bạn có chắc muốn xóa tất cả nội dung?')) {
+          stopRecording();
+          clearAll();
+        }
+      } else {
+        clearAll();
+      }
+    }
+    
+    function clearAll() {
+      sentences = [];
+      currentInterim = '';
+      elapsedSeconds = 0;
+      totalPausedTime = 0;
+      createdFileId = null;
+      createdFileName = null;
+      createdFileUrl = null;
+      document.getElementById('content').value = '';
+      document.getElementById('fileInfo').classList.remove('show');
+      updateTimer();
+      document.getElementById('timerDisplay').textContent = '00:00';
+      document.getElementById('timerDisplay').classList.remove('warning', 'danger');
+      document.getElementById('timerStatus').textContent = '⏸️ Sẵn sàng ghi âm';
+      document.getElementById('createBtn').disabled = true;
+      document.getElementById('downloadBtn').disabled = true;
+      document.getElementById('deleteBtn').disabled = true;
+      updateStatus('🔄 Đã xóa nội dung. Sẵn sàng ghi âm mới.', '');
+    }
+    
+    // ============ QUẢN LÝ THỜI GIAN ============
+    function startTimer() {
+      stopTimer();
+      
+      recordingTimer = setInterval(() => {
+        elapsedSeconds++;
+        updateTimer();
+        
+        if (elapsedSeconds >= MAX_RECORDING_TIME) {
+          updateStatus('⏰ Đã đạt giới hạn 30 phút. Tự động dừng ghi âm.', 'error');
+          stopRecording();
+        }
+      }, 1000);
+    }
+    
+    function stopTimer() {
+      if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+      }
+    }
+    
+    // ============ TẠO GOOGLE DOCS ============
+    function createDocument() {
+      const docName = document.getElementById('docName').value.trim();
+      const content = sentences.join(' ').trim();
+      
+      if (!docName) {
+        updateStatus('⚠️ Vui lòng nhập tên cuộc họp', 'error');
+        return;
+      }
+      
+      if (!content) {
+        updateStatus('⚠️ Chưa có nội dung để tạo tài liệu', 'error');
+        return;
+      }
+      
+      const now = new Date();
+      const timeInfo = '=== BIÊN BẢN CUỘC HỌP ===\n' +
+                      'Thời gian: ' + now.toLocaleString('vi-VN') + '\n' +
+                      'Thời lượng ghi âm: ' + formatTime(elapsedSeconds) + '\n' +
+                      '============================\n\n';
+      
+      const fullContent = timeInfo + content;
+      
+      updateStatus('<span class="loading-spinner"></span> Đang tạo tài liệu...', '');
+      document.getElementById('createBtn').disabled = true;
+
+      if (!WEBAPP_URL || WEBAPP_URL.indexOf('DÁN_URL') !== -1) {
+        updateStatus('⚠️ Chưa cấu hình WEBAPP_URL trong file index.html.', 'error');
+        document.getElementById('createBtn').disabled = false;
+        return;
+      }
+
+      fetch(WEBAPP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          docName: docName,
+          content: fullContent,
+          durationSeconds: elapsedSeconds
+        })
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            createdFileId = result.fileId;
+            createdFileName = result.fileName;
+            createdFileUrl = result.url;
+            
+            const fileInfo = document.getElementById('fileInfo');
+            const fileLink = document.getElementById('fileLink');
+            fileLink.href = result.url;
+            fileLink.textContent = '📄 ' + result.fileName;
+            fileInfo.classList.add('show');
+            
+            document.getElementById('deleteBtn').disabled = false;
+            
+            updateStatus(
+              '✅ Tài liệu đã được tạo thành công!<br>📄 ' + result.fileName +
+              '<br>📁 Thư mục: ' + result.folder,
+              'success'
+            );
+            document.getElementById('createBtn').disabled = false;
+
+            setTimeout(() => {
+              if (confirm('Tài liệu đã được tạo. Bạn có muốn mở ngay không?')) {
+                window.open(result.url, '_blank');
+              }
+            }, 1000);
+          } else {
+            updateStatus('❌ Lỗi: ' + result.error, 'error');
+            document.getElementById('createBtn').disabled = false;
+          }
+        })
+        .catch((error) => {
+          updateStatus('❌ Lỗi kết nối tới backend: ' + error.message, 'error');
+          document.getElementById('createBtn').disabled = false;
+          console.error(error);
+        });
+    }
+    
+    // ============ XÓA FILE TRÊN DRIVE ============
+    function deleteDocument() {
+      if (!createdFileId) {
+        updateStatus('⚠️ Không có file nào để xóa.', 'error');
+        return;
+      }
+      
+      if (!confirm(`Bạn có chắc muốn xóa file "${createdFileName}" trên Google Drive?\nHành động này không thể hoàn tác!`)) {
+        return;
+      }
+      
+      updateStatus('<span class="loading-spinner"></span> Đang xóa file...', '');
+      document.getElementById('deleteBtn').disabled = true;
+      
+      fetch(WEBAPP_URL + '?action=delete&fileId=' + createdFileId, {
+        method: 'GET'
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            updateStatus('✅ Đã xóa file "' + createdFileName + '" thành công!', 'success');
+            createdFileId = null;
+            createdFileName = null;
+            createdFileUrl = null;
+            document.getElementById('fileInfo').classList.remove('show');
+            document.getElementById('deleteBtn').disabled = true;
+          } else {
+            updateStatus('❌ Lỗi xóa file: ' + result.error, 'error');
+            document.getElementById('deleteBtn').disabled = false;
+          }
+        })
+        .catch((error) => {
+          updateStatus('❌ Lỗi kết nối: ' + error.message, 'error');
+          document.getElementById('deleteBtn').disabled = false;
+          console.error(error);
+        });
+    }
+    
+    // ============ TẢI FILE DOCX CHUẨN ============
+    async function downloadDocx() {
+      const docName = document.getElementById('docName').value.trim() || 'BienBanCuocHop';
+      const content = sentences.join(' ').trim();
+      
+      if (!content) {
+        updateStatus('⚠️ Chưa có nội dung để tạo file', 'error');
+        return;
+      }
+      
+      document.getElementById('docxLoading').classList.add('show');
+      document.getElementById('downloadBtn').disabled = true;
+      
+      try {
+        if (!docxLoaded) {
+          updateStatus('⏳ Đang tải thư viện DOCX...', 'warning');
+          await loadDocxLibrary();
+        }
+        
+        if (typeof docx === 'undefined') {
+          throw new Error('Không thể tải thư viện DOCX');
+        }
+        
+        const now = new Date();
+        const { Document, Packer, Paragraph, TextRun, AlignmentType, convertInchesToTwip } = docx;
+        
+        const timeInfo = `=== BIÊN BẢN CUỘC HỌP ===
+Thời gian: ${now.toLocaleString('vi-VN')}
+Thời lượng ghi âm: ${formatTime(elapsedSeconds)}
+============================
+
+`;
+        
+        const fullContent = timeInfo + content;
+        const contentLines = fullContent.split('\n').filter(line => line !== undefined);
+        const children = [];
+        
+        for (let i = 0; i < contentLines.length; i++) {
+          const line = contentLines[i];
+          const isTitle = line.startsWith('===');
+          const isSeparator = line.startsWith('===') && line.includes('============================');
+          
+          children.push(new Paragraph({
+            children: [
+              new TextRun({
+                text: line || ' ',
+                size: isTitle ? 32 : 28,
+                font: "Times New Roman",
+                bold: isTitle ? true : false,
+                color: "000000",
+              }),
+            ],
+            alignment: isTitle || isSeparator ? AlignmentType.CENTER : AlignmentType.LEFT,
+            spacing: {
+              line: 360,
+              after: i === contentLines.length - 1 ? 0 : 100,
+            }
+          }));
+        }
+        
+        const doc = new Document({
+          sections: [{
+            properties: {
+              page: {
+                margin: {
+                  top: convertInchesToTwip(1),
+                  bottom: convertInchesToTwip(1),
+                  left: convertInchesToTwip(1.2),
+                  right: convertInchesToTwip(1.2),
+                }
+              }
+            },
+            children: children,
+          }],
+        });
+        
+        const blob = await Packer.toBlob(doc);
+        
+        const link = document.createElement('a');
+        const timestamp = now.toISOString().slice(0, 19).replace(/[:.]/g, '-');
+        const fileName = `${docName}_${timestamp}.docx`;
+        
+        const docxBlob = new Blob([blob], { 
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+        });
+        
+        link.href = URL.createObjectURL(docxBlob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+        
+        updateStatus(`✅ File "${fileName}" đã được tải xuống thành công!`, 'success');
+        
+      } catch (error) {
+        console.error('Lỗi tạo DOCX:', error);
+        updateStatus('❌ Lỗi: ' + error.message, 'error');
+      } finally {
+        document.getElementById('docxLoading').classList.remove('show');
+        document.getElementById('downloadBtn').disabled = false;
+      }
+    }
+
+    // ============ QUẢN LÝ FILE TRÊN DRIVE ============
+    function openFileManager() {
+      document.getElementById('fileManagerModal').classList.add('show');
+      selectedFileIds.clear();
+      loadFileList();
+    }
+
+    function closeFileManager() {
+      document.getElementById('fileManagerModal').classList.remove('show');
+    }
+
+    async function loadFileList() {
+      const container = document.getElementById('fileListContainer');
+      const countEl = document.getElementById('fileCount');
+      
+      countEl.textContent = '🔄 Đang tải danh sách...';
+      container.innerHTML = '<div style="text-align:center;padding:40px;"><span class="loading-spinner"></span><p style="color:rgba(255,255,255,0.6);margin-top:15px;">Đang tải...</p></div>';
+      
+      try {
+        const response = await fetch(WEBAPP_URL + '?action=list', { method: 'GET' });
+        const result = await response.json();
+        
+        if (result.success && result.files && result.files.length > 0) {
+          fileList = result.files;
+          renderFileList(fileList);
+          countEl.textContent = `📄 Tổng cộng ${fileList.length} file`;
+        } else {
+          fileList = [];
+          container.innerHTML = `
+            <div class="empty-files">
+              <span class="empty-icon">📂</span>
+              <p>Không tìm thấy file nào</p>
+              <p style="font-size: 13px; margin-top: 8px;">Hãy ghi âm và tạo tài liệu trước</p>
+            </div>
+          `;
+          countEl.textContent = '📄 Không có file nào';
+        }
+      } catch (error) {
+        console.error('Lỗi tải danh sách file:', error);
+        container.innerHTML = `
+          <div class="empty-files">
+            <span class="empty-icon">❌</span>
+            <p>Lỗi tải danh sách</p>
+            <p style="font-size: 13px; margin-top: 8px; color: #ff5252;">${error.message}</p>
+          </div>
+        `;
+        countEl.textContent = '❌ Lỗi tải danh sách';
+      }
+      
+      updateButtons();
+    }
+
+    function renderFileList(files) {
+      const container = document.getElementById('fileListContainer');
+      
+      if (!files || files.length === 0) {
+        container.innerHTML = `
+          <div class="empty-files">
+            <span class="empty-icon">📂</span>
+            <p>Không tìm thấy file nào</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      files.forEach((file, index) => {
+        const isSelected = selectedFileIds.has(file.id);
+        const createdDate = new Date(file.createdTime);
+        const dateStr = createdDate.toLocaleString('vi-VN');
+        
+        html += `
+          <div class="file-item ${isSelected ? 'selected' : ''}" onclick="toggleFileSelection('${file.id}')">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleFileSelection('${file.id}')">
+            <div class="file-info-text">
+              <div class="file-name">📄 ${file.name}</div>
+              <div class="file-meta">📅 ${dateStr} | 📁 ${file.path || 'Thư mục gốc'}</div>
+            </div>
+            <div class="file-actions">
+              <button class="btn-sm btn-sm-open" onclick="event.stopPropagation(); downloadSingleFile('${file.id}')">📥 Tải</button>
+              <button class="btn-sm btn-sm-delete" onclick="event.stopPropagation(); deleteSingleFile('${file.id}')">🗑️ Xóa</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      updateButtons();
+    }
+
+    function toggleFileSelection(fileId) {
+      if (selectedFileIds.has(fileId)) {
+        selectedFileIds.delete(fileId);
+      } else {
+        selectedFileIds.add(fileId);
+      }
+      
+      // Cập nhật lại giao diện
+      const items = document.querySelectorAll('.file-item');
+      items.forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          const id = checkbox.parentElement.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+          if (id && selectedFileIds.has(id)) {
+            item.classList.add('selected');
+            checkbox.checked = true;
+          } else {
+            item.classList.remove('selected');
+            checkbox.checked = false;
+          }
+        }
+      });
+      
+      updateButtons();
+    }
+
+    function updateButtons() {
+      const count = selectedFileIds.size;
+      const deleteBtn = document.getElementById('deleteSelectedBtn');
+      
+      deleteBtn.disabled = count === 0;
+      deleteBtn.textContent = `🗑️ Xóa (${count})`;
+    }
+
+    // Tải 1 file DOCX (tải trực tiếp file về máy)
+async function downloadSingleFile(fileId) {
+  const file = fileList.find(f => f.id === fileId);
+  if (!file) {
+    alert('Không tìm thấy file');
+    return;
+  }
+  
+  try {
+    const statusEl = document.getElementById('status');
+    statusEl.innerHTML = '📥 Đang tải file "' + file.name + '"...';
+    statusEl.className = 'status';
+    
+    // Gọi backend để lấy nội dung file dạng base64
+    const response = await fetch(WEBAPP_URL + '?action=export&fileId=' + fileId);
+    const result = await response.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Không thể tải file');
+    }
+    
+    // Giải mã base64 thành dữ liệu nhị phân
+    const byteCharacters = atob(result.base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+    
+    // Tạo link tải file
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = result.fileName || (file.name + '.docx');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Giải phóng URL sau khi tải
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    
+    statusEl.innerHTML = '✅ Đã tải file "' + file.name + '"';
+    statusEl.className = 'status success';
+  } catch (error) {
+    console.error('Lỗi tải file:', error);
+    const statusEl = document.getElementById('status');
+    statusEl.innerHTML = '❌ Lỗi tải file: ' + error.message;
+    statusEl.className = 'status error';
+  }
+}
+
+    async function deleteSingleFile(fileId) {
+      const file = fileList.find(f => f.id === fileId);
+      if (!file) return;
+      
+      if (!confirm(`Bạn có chắc muốn xóa file "${file.name}"?\nHành động này không thể hoàn tác!`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(WEBAPP_URL + '?action=delete&fileId=' + fileId, { method: 'GET' });
+        const result = await response.json();
+        
+        if (result.success) {
+          // Xóa khỏi danh sách
+          fileList = fileList.filter(f => f.id !== fileId);
+          selectedFileIds.delete(fileId);
+          renderFileList(fileList);
+          document.getElementById('fileCount').textContent = `📄 Tổng cộng ${fileList.length} file`;
+          updateStatus(`✅ Đã xóa file "${file.name}"`, 'success');
+        } else {
+          alert('Lỗi xóa file: ' + result.error);
+        }
+      } catch (error) {
+        alert('Lỗi kết nối: ' + error.message);
+      }
+    }
+
+    async function deleteSelectedFiles() {
+      if (selectedFileIds.size === 0) {
+        alert('Vui lòng chọn ít nhất một file để xóa');
+        return;
+      }
+      
+      const fileNames = fileList
+        .filter(f => selectedFileIds.has(f.id))
+        .map(f => f.name)
+        .join('\n');
+      
+      if (!confirm(`Bạn có chắc muốn xóa ${selectedFileIds.size} file sau?\n\n${fileNames}\n\nHành động này không thể hoàn tác!`)) {
+        return;
+      }
+      
+      const fileIds = Array.from(selectedFileIds);
+      
+      try {
+        const response = await fetch(WEBAPP_URL + '?action=deleteMultiple&fileIds=' + JSON.stringify(fileIds), {
+          method: 'GET'
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          // Xóa các file đã xóa khỏi danh sách
+          fileList = fileList.filter(f => !selectedFileIds.has(f.id));
+          selectedFileIds.clear();
+          renderFileList(fileList);
+          document.getElementById('fileCount').textContent = `📄 Tổng cộng ${fileList.length} file`;
+          updateStatus(`✅ Đã xóa thành công ${result.results ? result.results.filter(r => r.success).length : fileIds.length} file`, 'success');
+        } else {
+          alert('Lỗi xóa file: ' + result.error);
+        }
+      } catch (error) {
+        alert('Lỗi kết nối: ' + error.message);
+      }
+    }
+
+    // ============ KHỞI TẠO ============
+    window.onload = function() {
+      initSpeechRecognition();
+      updateTimer();
+      
+      loadDocxLibrary().then(() => {
+        console.log('✅ Thư viện DOCX đã sẵn sàng');
+        updateStatus('✅ Sẵn sàng ghi âm và tạo DOCX', 'success');
+      }).catch((error) => {
+        console.warn('⚠️ Không thể tải trước thư viện DOCX:', error.message);
+        updateStatus('💡 Lần đầu tải DOCX sẽ cần tải thư viện (có internet)', 'warning');
+      });
+
+      // Đóng modal khi click bên ngoài
+      document.getElementById('fileManagerModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeFileManager();
+        }
+      });
+
+      // Đóng modal khi nhấn ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeFileManager();
+        }
+      });
+    };
+    
+    window.onbeforeunload = function() {
+      if (isRecording) {
+        return 'Bạn đang ghi âm. Bạn có chắc muốn rời khỏi trang?';
+      }
+    };
+  </script>
+</body>
+</html>
