@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎙️ Ghi Âm Cuộc Họp</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0a1929, #0d2137, #0f2b45);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(30px);
+      border-radius: 32px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      color: #fff;
+    }
+    h1 { text-align:center; font-size:22px; margin-bottom:6px; }
+    .subtitle { text-align:center; opacity:0.7; font-size:12px; letter-spacing:2px; margin-bottom:16px; }
+    .timer-card {
+      background: rgba(0,0,0,0.3);
+      border-radius:20px;
+      padding:16px;
+      text-align:center;
+      margin-bottom:16px;
+      border:1px solid rgba(0,200,255,0.2);
+    }
+    .timer-display {
+      font-size:42px;
+      font-weight:800;
+      font-family:'Courier New',monospace;
+      color:#00e5ff;
+      text-shadow:0 0 30px rgba(0,229,255,0.6);
+      letter-spacing:4px;
+    }
+    .timer-status { margin-top:4px; font-size:14px; opacity:0.9; }
+    .card {
+      background: rgba(255,255,255,0.06);
+      border-radius:20px;
+      padding:16px;
+      margin-bottom:16px;
+    }
+    label {
+      display:block;
+      font-weight:600;
+      margin-bottom:8px;
+      font-size:13px;
+      text-transform:uppercase;
+      opacity:0.8;
+    }
+    input, textarea {
+      width:100%;
+      padding:12px;
+      border-radius:15px;
+      border:2px solid rgba(255,255,255,0.2);
+      background:rgba(0,0,0,0.25);
+      color:#fff;
+      font-size:15px;
+      outline:none;
+      transition:0.3s;
+      font-family:'Times New Roman', serif;
+    }
+    textarea {
+      height:150px;
+      resize:vertical;
+      line-height:1.6;
+    }
+    input:focus, textarea:focus {
+      border-color:#00b4db;
+      box-shadow:0 0 20px rgba(0,180,219,0.3);
+    }
+    .btn {
+      padding:12px 20px;
+      border-radius:50px;
+      border:none;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      transition:0.3s;
+      text-transform:uppercase;
+      width:100%;
+      margin-bottom:10px;
+    }
+    .btn-record {
+      background:linear-gradient(135deg, #00b4db, #0083b0);
+      color:#fff;
+      box-shadow:0 8px 25px rgba(0,180,219,0.4);
+    }
+    .btn-record.recording {
+      background:linear-gradient(135deg, #ff1744, #d50000);
+      box-shadow:0 8px 30px rgba(255,23,68,0.6);
+      animation:pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0% { box-shadow:0 0 0 0 rgba(255,23,68,0.7); } 70% { box-shadow:0 0 0 20px rgba(255,23,68,0); } 100% { box-shadow:0 0 0 0 rgba(255,23,68,0); } }
+    .btn-pause {
+      background:linear-gradient(135deg, #ff9100, #ff6d00);
+      color:#fff;
+    }
+    .btn-pause.paused { background:linear-gradient(135deg, #00c853, #009624); }
+    .btn-submit {
+      background:linear-gradient(135deg, #11998e, #38ef7d);
+      color:#fff;
+    }
+    .btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .btn-secondary {
+      background:rgba(255,255,255,0.08);
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.2);
+    }
+    .btn-danger {
+      background:linear-gradient(135deg, #ff416c, #ff4b2b);
+      color:#fff;
+    }
+    .btn-row { display:flex; gap:8px; }
+    .btn-row .btn { flex:1; margin-bottom:0; }
+    .status {
+      padding:12px;
+      border-radius:15px;
+      background:rgba(0,0,0,0.2);
+      text-align:center;
+      font-size:14px;
+      min-height:45px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:12px;
+      transition:0.3s;
+    }
+    .status.success { background:rgba(0,200,83,0.2); border:1px solid rgba(0,200,83,0.3); color:#69f0ae; }
+    .status.error { background:rgba(255,23,68,0.2); border:1px solid rgba(255,23,68,0.3); color:#ff5252; }
+    .status.warning { background:rgba(255,145,0,0.2); border:1px solid rgba(255,145,0,0.3); color:#ffab40; }
+    .file-info {
+      display:none;
+      background:rgba(0,0,0,0.2);
+      border-radius:15px;
+      padding:12px;
+      margin-top:12px;
+      text-align:center;
+      font-size:13px;
+    }
+    .file-info.show { display:block; }
+    .file-info a { color:#00e5ff; text-decoration:none; }
+    .file-info a:hover { text-decoration:underline; }
+    .loading {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.8);
+      z-index:1000;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      gap:20px;
+    }
+    .loading.show { display:flex; }
+    .spinner {
+      width:50px;
+      height:50px;
+      border:5px solid rgba(255,255,255,0.1);
+      border-top-color:#00e5ff;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎙️ Ghi Âm Cuộc Họp</h1>
+  <p class="subtitle">Nhận diện giọng nói tiếng Việt (cần internet)</p>
+
+  <div class="timer-card">
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <div class="timer-status" id="timerStatus">⏸️ Sẵn sàng</div>
+  </div>
+
+  <div class="card">
+    <label>📝 Tên cuộc họp</label>
+    <input type="text" id="docName" placeholder="Nhập tên..." value="BBH" />
+  </div>
+
+  <div class="card">
+    <button class="btn btn-record" id="recordBtn">🎤 BẮT ĐẦU GHI</button>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-pause" id="pauseBtn" disabled>⏸️ TẠM DỪNG</button>
+      <button class="btn btn-secondary" id="resetBtn">🔄 XÓA</button>
+    </div>
+    <textarea id="content" placeholder="Nội dung sẽ hiển thị ở đây..." readonly></textarea>
+  </div>
+
+  <button class="btn btn-submit" id="submitBtn" disabled>📤 TẠO GOOGLE DOCS</button>
+  <div class="btn-row">
+    <button class="btn btn-secondary" id="downloadBtn" disabled>📥 TẢI DOCX</button>
+    <button class="btn btn-danger" id="deleteBtn" disabled>🗑️ XÓA</button>
+  </div>
+
+  <div class="file-info" id="fileInfo">
+    📄 <a href="#" id="fileLink" target="_blank">Đã tạo tài liệu</a>
+  </div>
+
+  <div class="status" id="status">👆 Nhấn "BẮT ĐẦU GHI" để bắt đầu</div>
+</div>
+
+<script>
+// ============ CẤU HÌNH ============
+const WEBAPP_URL = 'https://script.google.com/macros/s/YourAppScriptId/exec'; // Thay bằng URL của bạn
+const MAX_RECORDING = 30 * 60; // 30 phút
+
+let recognition = null;
+let isRecording = false;
+let isPaused = false;
+let elapsedSeconds = 0;
+let timerInterval = null;
+let sentences = [];
+let interimText = '';
+let shouldRestart = false; // tự khởi động lại khi trình duyệt tự ngắt do im lặng / giới hạn thời gian
+
+// DOM elements
+const recordBtn = document.getElementById('recordBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const submitBtn = document.getElementById('submitBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const content = document.getElementById('content');
+const status = document.getElementById('status');
+const timerDisplay = document.getElementById('timerDisplay');
+const timerStatus = document.getElementById('timerStatus');
+const fileInfo = document.getElementById('fileInfo');
+const fileLink = document.getElementById('fileLink');
+
+let createdFileId = null;
+let createdFileName = null;
+let createdFileUrl = null;
+
+// ============ KHỞI TẠO NHẬN DIỆN GIỌNG NÓI (Web Speech API - có sẵn trong Chrome) ============
+function initSpeechRecognition() {
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognitionAPI) {
+    updateStatus('❌ Trình duyệt này không hỗ trợ nhận diện giọng nói. Vui lòng dùng Chrome.', 'error');
+    recordBtn.disabled = true;
+    return;
+  }
+
+  recognition = new SpeechRecognitionAPI();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'vi-VN';
+
+  recognition.onresult = (event) => {
+    let finalChunk = '';
+    let interimChunk = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalChunk += transcript;
+      } else {
+        interimChunk += transcript;
+      }
+    }
+    if (finalChunk) {
+      sentences.push(finalChunk.trim());
+      updateStatus('🔊 Đã nhận dạng: ' + finalChunk.trim(), '');
+    }
+    interimText = interimChunk;
+    updateDisplay();
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Lỗi nhận diện giọng nói:', event.error);
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      updateStatus('❌ Không có quyền truy cập microphone.', 'error');
+      stopRecording();
+    } else if (event.error === 'network') {
+      updateStatus('❌ Lỗi mạng. Tính năng này cần kết nối internet.', 'error');
+    }
+    // Lỗi 'no-speech' bỏ qua, sẽ tự khởi động lại qua onend
+  };
+
+  recognition.onend = () => {
+    // Chrome tự ngắt sau một khoảng im lặng hoặc mỗi ~60s; tự khởi động lại nếu vẫn đang ghi
+    if (shouldRestart && isRecording && !isPaused) {
+      try { recognition.start(); } catch (e) { /* đã start rồi, bỏ qua */ }
+    }
+  };
+
+  updateStatus('✅ Sẵn sàng. Nhấn "BẮT ĐẦU GHI" để bắt đầu.', 'success');
+}
+
+// ============ QUẢN LÝ GHI ÂM ============
+async function startRecording() {
+  if (!recognition) {
+    updateStatus('⚠️ Trình duyệt chưa sẵn sàng, vui lòng đợi.', 'warning');
+    return;
+  }
+  if (isRecording) return;
+
+  try {
+    shouldRestart = true;
+    recognition.start();
+
+    isRecording = true;
+    isPaused = false;
+    recordBtn.textContent = '⏺️ DỪNG GHI';
+    recordBtn.classList.add('recording');
+    pauseBtn.disabled = false;
+    pauseBtn.textContent = '⏸️ TẠM DỪNG';
+    pauseBtn.classList.remove('paused');
+    timerStatus.textContent = '🔴 Đang ghi âm...';
+    submitBtn.disabled = true;
+    downloadBtn.disabled = true;
+    deleteBtn.disabled = true;
+    startTimer();
+    updateStatus('🎙️ Đang ghi âm...', '');
+  } catch (err) {
+    console.error('Lỗi bắt đầu ghi âm:', err);
+    updateStatus('❌ Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền microphone.', 'error');
+  }
+}
+
+function stopRecording() {
+  if (!isRecording) return;
+  isRecording = false;
+  isPaused = false;
+  shouldRestart = false;
+
+  if (recognition) {
+    try { recognition.stop(); } catch (e) {}
+  }
+
+  recordBtn.textContent = '🎤 BẮT ĐẦU GHI';
+  recordBtn.classList.remove('recording');
+  pauseBtn.disabled = true;
+  pauseBtn.textContent = '⏸️ TẠM DỪNG';
+  pauseBtn.classList.remove('paused');
+  timerStatus.textContent = '⏸️ Đã dừng';
+  stopTimer();
+
+  if (sentences.length > 0) {
+    submitBtn.disabled = false;
+    downloadBtn.disabled = false;
+    updateStatus('✅ Ghi âm hoàn tất. Bạn có thể tạo tài liệu.', 'success');
+    // Tự động tạo Docs
+    createDocument();
+  } else {
+    updateStatus('⚠️ Không có nội dung nào được ghi.', 'warning');
+  }
+}
+
+function togglePause() {
+  if (!isRecording) return;
+  isPaused = !isPaused;
+  if (isPaused) {
+    shouldRestart = false;
+    if (recognition) { try { recognition.stop(); } catch (e) {} }
+    pauseBtn.textContent = '▶️ TIẾP TỤC';
+    pauseBtn.classList.add('paused');
+    timerStatus.textContent = '⏸️ Đã tạm dừng';
+    updateStatus('⏸️ Tạm dừng ghi âm.', 'warning');
+    stopTimer();
+  } else {
+    shouldRestart = true;
+    if (recognition) { try { recognition.start(); } catch (e) {} }
+    pauseBtn.textContent = '⏸️ TẠM DỪNG';
+    pauseBtn.classList.remove('paused');
+    timerStatus.textContent = '🔴 Đang ghi âm...';
+    updateStatus('▶️ Tiếp tục ghi âm.', '');
+    startTimer();
+  }
+}
+
+function resetRecording() {
+  if (isRecording) {
+    if (!confirm('Bạn đang ghi âm. Xóa tất cả?')) return;
+    stopRecording();
+  }
+  sentences = [];
+  interimText = '';
+  elapsedSeconds = 0;
+  content.value = '';
+  timerDisplay.textContent = '00:00';
+  timerDisplay.classList.remove('warning', 'danger');
+  timerStatus.textContent = '⏸️ Sẵn sàng';
+  submitBtn.disabled = true;
+  downloadBtn.disabled = true;
+  deleteBtn.disabled = true;
+  createdFileId = null;
+  fileInfo.classList.remove('show');
+  updateStatus('🔄 Đã xóa nội dung.', '');
+}
+
+// ============ HIỂN THỊ VĂN BẢN ============
+function updateDisplay() {
+  let text = sentences.join(' ');
+  if (interimText) text += ' ' + interimText;
+  content.value = text;
+}
+
+// ============ ĐỒNG HỒ ============
+function startTimer() {
+  stopTimer();
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    updateTimerDisplay();
+    if (elapsedSeconds >= MAX_RECORDING) {
+      updateStatus('⏰ Đã đạt giới hạn 30 phút. Tự động dừng.', 'error');
+      stopRecording();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerDisplay() {
+  const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+  const s = String(elapsedSeconds % 60).padStart(2, '0');
+  timerDisplay.textContent = m + ':' + s;
+  timerDisplay.classList.remove('warning', 'danger');
+  if (elapsedSeconds >= 28*60) timerDisplay.classList.add('danger');
+  else if (elapsedSeconds >= 25*60) timerDisplay.classList.add('warning');
+}
+
+// ============ GỬI LÊN GOOGLE DRIVE ============
+function createDocument() {
+  const docName = document.getElementById('docName').value.trim() || 'BBH';
+  const contentText = sentences.join(' ').trim();
+  if (!contentText) {
+    updateStatus('⚠️ Không có nội dung để tạo.', 'error');
+    return;
+  }
+  const now = new Date();
+  const fullContent = `=== BIÊN BẢN CUỘC HỌP ===\nThời gian: ${now.toLocaleString('vi-VN')}\nThời lượng: ${formatTime(elapsedSeconds)}\n============================\n\n${contentText}`;
+
+  updateStatus('<span class="spinner" style="display:inline-block;width:16px;height:16px;border-width:2px;"></span> Đang tạo tài liệu...', '');
+  submitBtn.disabled = true;
+
+  fetch(WEBAPP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ docName, content: fullContent, durationSeconds: elapsedSeconds })
+  })
+  .then(res => res.json())
+  .then(result => {
+    if (result.success) {
+      createdFileId = result.fileId;
+      createdFileName = result.fileName;
+      createdFileUrl = result.url;
+      fileLink.href = result.url;
+      fileLink.textContent = '📄 ' + result.fileName;
+      fileInfo.classList.add('show');
+      deleteBtn.disabled = false;
+      updateStatus('✅ Tài liệu đã tạo thành công!', 'success');
+      setTimeout(() => {
+        if (confirm('Mở tài liệu ngay?')) window.open(result.url, '_blank');
+      }, 1000);
+    } else {
+      updateStatus('❌ Lỗi: ' + result.error, 'error');
+    }
+    submitBtn.disabled = false;
+  })
+  .catch(err => {
+    updateStatus('❌ Lỗi kết nối: ' + err.message, 'error');
+    submitBtn.disabled = false;
+  });
+}
+
+// ============ XÓA FILE ============
+function deleteDocument() {
+  if (!createdFileId) return;
+  if (!confirm(`Xóa file "${createdFileName}" trên Drive?`)) return;
+  fetch(WEBAPP_URL + '?action=delete&fileId=' + createdFileId)
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        createdFileId = null;
+        fileInfo.classList.remove('show');
+        deleteBtn.disabled = true;
+        updateStatus('✅ Đã xóa file.', 'success');
+      } else {
+        updateStatus('❌ Lỗi xóa: ' + result.error, 'error');
+      }
+    })
+    .catch(err => updateStatus('❌ Lỗi: ' + err.message, 'error'));
+}
+
+// ============ TIỆN ÍCH ============
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ' phút ' + s + ' giây';
+}
+function updateStatus(msg, type = '') {
+  status.innerHTML = msg;
+  status.className = 'status ' + type;
+}
+
+// ============ SỰ KIỆN ============
+recordBtn.addEventListener('click', () => {
+  if (isRecording) stopRecording();
+  else startRecording();
+});
+pauseBtn.addEventListener('click', togglePause);
+resetBtn.addEventListener('click', resetRecording);
+submitBtn.addEventListener('click', createDocument);
+deleteBtn.addEventListener('click', deleteDocument);
+
+// ============ KHỞI ĐỘNG ============
+window.onload = () => {
+  initSpeechRecognition();
+  updateTimerDisplay();
+};
+</script>
+</body>
+</html>
